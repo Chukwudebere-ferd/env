@@ -1,0 +1,21 @@
+/* Login — auth page only. Shared inputs/buttons live in index.css, shell in App.css. */
+
+.login-wrap { max-width: 480px; margin: var(--space-6) auto; }
+.login-eyebrow { text-align: center; }
+.login-title { font-size: 48px; text-align: center; margin-top: var(--space-3); }
+.login-sub { text-align: center; margin-top: 12px; }
+.login-card { padding: var(--space-5); margin-top: var(--space-3); }
+.login-label { font-size: 13px; }
+.login-input { margin: var(--space-2) 0 12px; }
+.login-error { margin-bottom: 12px; }
+.login-block { width: 100%; }
+.login-divider { display: flex; gap: 12px; align-items: center; margin: var(--space-3) 0; }
+.login-divider::before, .login-divider::after { content: ""; flex: 1; height: 1px; background: var(--color-line); }
+.login-divider-text { font-size: 13px; }
+.login-foot { margin-top: var(--space-3); text-align: center; font-size: 13px; }
+
+@media (max-width: 960px) {
+  .login-wrap { margin: var(--space-5) auto; }
+  .login-title { font-size: 36px; }
+  .login-card { padding: var(--space-4); }
+}

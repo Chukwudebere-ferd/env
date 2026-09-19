@@ -1,0 +1,18 @@
+/* Dashboard — vault list console only. App shell + table live in App.css. */
+
+.dash-new { padding: var(--space-3); margin-bottom: 12px; }
+.dash-filters { flex-wrap: wrap; }
+.dash-filter-input { max-width: 240px; }
+.dash-sort-select { max-width: 150px; }
+.dash-error { padding: 20px; }
+.dash-error-btn { height: 40px; margin-top: 12px; }
+.dash-open-btn { height: 34px; text-decoration: none; }
+.dash-cell-nowrap { white-space: nowrap; }
+.dash-foot { font-size: 12px; }
+.dash-empty-btn { height: 40px; margin-top: var(--space-3); }
+.dash-form-grid { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; align-items: start; }
+
+@media (max-width: 960px) {
+  .dash-form-grid { grid-template-columns: 1fr; }
+  .dash-filter-input, .dash-sort-select { max-width: none; width: 100%; }
+}

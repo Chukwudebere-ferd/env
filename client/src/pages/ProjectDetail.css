@@ -1,0 +1,37 @@
+/* ProjectDetail — vault detail console only. App shell + table live in App.css. */
+
+.detail-id { font-size: 14px; }
+.detail-topbar-btn { height: 40px; }
+
+/* Lock strip: the one memorable element. Signal means unlocked. */
+.detail-lock {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--space-3); flex-wrap: wrap; padding: var(--space-3) 20px;
+  border-radius: var(--radius-md); margin: 20px 0;
+}
+.detail-lock-state { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.detail-lock-state b { font-size: 15px; }
+.detail-lock-state p { color: var(--color-mute); font-size: 13px; }
+.detail-lock-dot { width: 10px; height: 10px; border-radius: 999px; background: var(--color-mute); flex: none; }
+.detail-lock.open .detail-lock-dot { background: var(--color-accent); box-shadow: 0 0 16px rgba(159, 232, 113, 0.6); }
+.detail-lock.open { border-color: rgba(159, 232, 113, 0.35); }
+.detail-lock-btn { height: 36px; }
+
+.detail-tabs { display: flex; gap: var(--space-2); margin-bottom: var(--space-3); }
+.detail-panel-filters { flex-wrap: wrap; }
+.detail-search { max-width: 240px; }
+.detail-count { font-size: 12px; }
+.detail-error { padding: 20px; }
+.detail-error-btn { height: 40px; margin-top: 12px; }
+.detail-foot { font-size: 12px; }
+.detail-empty-btn { height: 40px; margin-top: var(--space-3); }
+.detail-key-name { word-break: break-all; }
+.detail-key-value { word-break: break-all; }
+.detail-key-value.masked { color: var(--color-mute); }
+.detail-key-value.revealed { color: var(--color-accent); }
+.detail-key-date { white-space: nowrap; }
+
+@media (max-width: 960px) {
+  .detail-lock { align-items: flex-start; flex-direction: column; }
+  .detail-search { max-width: none; width: 100%; }
+}

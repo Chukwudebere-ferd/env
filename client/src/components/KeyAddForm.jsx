@@ -1,71 +1,97 @@
 import { useState } from 'react';
 
 export default function KeyAddForm({ onAddSingle, onAddBulk }) {
+  const [tab, setTab] = useState('single');
   const [name, setName] = useState('');
   const [value, setValue] = useState('');
   const [content, setContent] = useState('');
+  const [busy, setBusy] = useState(false);
 
   return (
-    <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', alignItems: 'start' }}>
-      <form
-        className="card"
-        style={{ padding: 16 }}
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (name.trim() && value.trim()) {
-            onAddSingle(name.trim(), value.trim());
-            setName('');
-            setValue('');
-          }
-        }}
-      >
-        <h2>Add key</h2>
-        <div style={{ marginTop: 12 }} className="grid">
-          <label className="muted" htmlFor="key-name">Configure name</label>
-          <input id="key-name" className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="STRIPE_KEY" />
-          <label className="muted" htmlFor="key-value">Value</label>
-          <input id="key-value" className="input mono" value={value} onChange={(e) => setValue(e.target.value)} placeholder="sk_live_..." />
-          <div><button type="submit" className="btn">Save key</button></div>
-        </div>
-      </form>
+    <div className="card" style={{ padding: 20 }}>
+      <div className="seg" role="tablist" aria-label="Add keys">
+        <button type="button" role="tab" aria-selected={tab === 'single'} onClick={() => setTab('single')}>
+          Single key
+        </button>
+        <button type="button" role="tab" aria-selected={tab === 'bulk'} onClick={() => setTab('bulk')}>
+          Bulk import
+        </button>
+      </div>
 
-      <form
-        className="card"
-        style={{ padding: 16 }}
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (content.trim()) {
-            onAddBulk(content);
-            setContent('');
-          }
-        }}
-      >
-        <h2>Import</h2>
-        <p className="muted" style={{ margin: '8px 0 12px' }}>Paste <code>NAME=value</code> lines or choose a .env/.txt/.md file.</p>
-        <textarea
-          className="textarea mono"
-          rows={6}
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder={'STRIPE_KEY=sk_live_xxx\nOPENAI_KEY=sk-xxx'}
-          aria-label="Paste keys as NAME=value lines"
-        />
-        <div className="row" style={{ marginTop: 12 }}>
-          <label className="btn btn-secondary" style={{ cursor: 'pointer' }}>
-            Choose file
-            <input
-              type="file"
-              accept=".env,.txt,.md"
-              hidden
-              onChange={async (e) => {
-                const f = e.target.files?.[0];
-                if (f) setContent(await f.text());
-              }}
-            />
-          </label>
-          <button type="submit" className="btn">Import</button>
-        </div>
-      </form>
+      {tab === 'single' ? (
+        <form
+          style={{ marginTop: 16 }}
+          onSubmit={async (e) => {
+            e.preventDefault();
+            if (!name.trim() || !value.trim() || busy) return;
+            setBusy(true);
+            try {
+              await onAddSingle(name.trim(), value.trim());
+              setName('');
+              setValue('');
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div>
+              <label className="muted" htmlFor="key-name" style={{ fontSize: 13 }}>Name</label>
+              <input id="key-name" className="input mono" style={{ marginTop: 4 }} value={name} onChange={(e) => setName(e.target.value)} placeholder="STRIPE_KEY" required />
+            </div>
+            <div>
+              <label className="muted" htmlFor="key-value" style={{ fontSize: 13 }}>Value</label>
+              <input id="key-value" className="input mono" style={{ marginTop: 4 }} value={value} onChange={(e) => setValue(e.target.value)} placeholder="sk_live_..." required />
+            </div>
+          </div>
+          <button type="submit" className="btn btn-accent" style={{ marginTop: 12 }} disabled={busy}>
+            {busy ? 'Saving…' : 'Save key'}
+          </button>
+        </form>
+      ) : (
+        <form
+          style={{ marginTop: 16 }}
+          onSubmit={async (e) => {
+            e.preventDefault();
+            if (!content.trim() || busy) return;
+            setBusy(true);
+            try {
+              await onAddBulk(content);
+              setContent('');
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          <label className="muted" htmlFor="bulk" style={{ fontSize: 13 }}>Paste NAME=value lines or choose a file</label>
+          <textarea
+            id="bulk"
+            className="textarea mono"
+            style={{ marginTop: 4 }}
+            rows={6}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder={'STRIPE_KEY=sk_live_xxx\nOPENAI_KEY=sk-xxx'}
+          />
+          <div className="row" style={{ marginTop: 12 }}>
+            <label className="btn btn-secondary" style={{ cursor: 'pointer', height: 40 }}>
+              Choose file
+              <input
+                type="file"
+                accept=".env,.txt,.md"
+                hidden
+                onChange={async (e) => {
+                  const f = e.target.files?.[0];
+                  if (f) setContent(await f.text());
+                }}
+              />
+            </label>
+            <button type="submit" className="btn btn-accent" disabled={busy}>
+              {busy ? 'Importing…' : 'Import'}
+            </button>
+          </div>
+        </form>
+      )}
     </div>
   );
 }
