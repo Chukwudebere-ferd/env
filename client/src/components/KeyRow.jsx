@@ -1,6 +1,6 @@
 import CopyButton from './CopyButton.jsx';
 
-export default function KeyRow({ entry, revealed, onRevealOne, onDelete }) {
+export default function KeyRow({ entry, revealed, onRevealOne, onDelete, revealing = false }) {
   const name = entry.configName || entry.config_name;
   const added = entry.created_at || entry.createdAt;
   return (
@@ -18,8 +18,8 @@ export default function KeyRow({ entry, revealed, onRevealOne, onDelete }) {
           {revealed ? (
             <CopyButton text={revealed} label="Copy value" />
           ) : (
-            <button type="button" className="btn btn-secondary btn-sm" onClick={onRevealOne}>
-              Reveal
+            <button type="button" className="btn btn-secondary btn-sm" onClick={onRevealOne} disabled={revealing} aria-busy={revealing}>
+              {revealing ? 'Revealing…' : 'Reveal'}
             </button>
           )}
           {onDelete && (

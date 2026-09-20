@@ -4,6 +4,7 @@ import { api } from '../lib/api.js';
 import KeyRow from '../components/KeyRow.jsx';
 import KeyAddForm from '../components/KeyAddForm.jsx';
 import OtpModal from '../components/OtpModal.jsx';
+import ConfirmDialog from '../components/ConfirmDialog.jsx';
 import ConsoleSidebar from '../components/ConsoleSidebar.jsx';
 import './ProjectDetail.css';
 
@@ -40,6 +41,11 @@ export default function ProjectDetail({ email, onSignOut }) {
   const [tab, setTab] = useState('keys');
   const [q, setQ] = useState('');
   const [busyDelete, setBusyDelete] = useState(false);
+  const [revealingKeyId, setRevealingKeyId] = useState(null);
+  const [revealingAll, setRevealingAll] = useState(false);
+  const [confirmVault, setConfirmVault] = useState(false);
+  const [pendingKey, setPendingKey] = useState(null);
+  const [deletingKeyId, setDeletingKeyId] = useState(null);
 
   const load = useCallback(async () => {
     setState({ loading: true, error: '' });
@@ -76,6 +82,8 @@ export default function ProjectDetail({ email, onSignOut }) {
   }, [verifiedAt]);
 
   async function reveal(keyId) {
+    if (keyId) setRevealingKeyId(keyId);
+    else setRevealingAll(true);
     try {
       const out = await api.revealKeys(email, projectId, keyId);
       const map = {};
@@ -90,13 +98,17 @@ export default function ProjectDetail({ email, onSignOut }) {
       } else {
         setState((s) => ({ ...s, error: err.message }));
       }
+    } finally {
+      if (keyId) setRevealingKeyId(null);
+      else setRevealingAll(false);
     }
   }
 
-  async function removeKey(id, name) {
-    if (!window.confirm(`Delete key "${name}"? This cannot be undone.`)) return;
+  async function removeKey(id) {
+    setDeletingKeyId(id);
     try {
       await api.deleteKey(email, id);
+      setPendingKey(null);
       setRevealed((prev) => {
         const next = { ...prev };
         delete next[id];
@@ -105,11 +117,12 @@ export default function ProjectDetail({ email, onSignOut }) {
       await load();
     } catch (err) {
       setState((s) => ({ ...s, error: err.message }));
+    } finally {
+      setDeletingKeyId(null);
     }
   }
 
   async function removeVault() {
-    if (!window.confirm(`Delete vault "${title}" and all its keys? This cannot be undone.`)) return;
     setBusyDelete(true);
     try {
       await api.deleteProject(email, projectId);
@@ -166,10 +179,10 @@ export default function ProjectDetail({ email, onSignOut }) {
               <button type="button" className="btn btn-secondary detail-topbar-btn" onClick={() => { setPendingKeyId(null); setShowOtp(true); }}>
                 Unlock
               </button>
-              <button type="button" className="btn btn-accent detail-topbar-btn" onClick={() => reveal(null)}>
-                Reveal all
+              <button type="button" className="btn btn-accent detail-topbar-btn" onClick={() => reveal(null)} disabled={revealingAll || state.loading} aria-busy={revealingAll}>
+                {revealingAll ? 'Revealing…' : 'Reveal all'}
               </button>
-              <button type="button" className="btn btn-secondary detail-topbar-btn" onClick={removeVault} disabled={busyDelete}>
+              <button type="button" className="btn btn-secondary detail-topbar-btn" onClick={() => setConfirmVault(true)} disabled={busyDelete}>
                 {busyDelete ? 'Deleting…' : 'Delete vault'}
               </button>
             </div>
@@ -257,8 +270,8 @@ export default function ProjectDetail({ email, onSignOut }) {
               {state.error ? (
                 <div className="detail-error">
                   <p className="error" role="alert">{state.error}</p>
-                  <button type="button" className="btn btn-secondary detail-error-btn" onClick={load}>
-                    Retry
+                  <button type="button" className="btn btn-secondary detail-error-btn" onClick={load} disabled={state.loading} aria-busy={state.loading}>
+                    {state.loading ? 'Retrying…' : 'Retry'}
                   </button>
                 </div>
               ) : (
@@ -273,8 +286,9 @@ export default function ProjectDetail({ email, onSignOut }) {
                         key={k.id}
                         entry={k}
                         revealed={revealed[k.id]}
+                        revealing={revealingKeyId === k.id}
                         onRevealOne={() => reveal(k.id)}
-                        onDelete={() => removeKey(k.id, k.config_name || k.configName)}
+                        onDelete={() => setPendingKey(k)}
                       />
                     ))}
                   </tbody>
@@ -307,6 +321,26 @@ export default function ProjectDetail({ email, onSignOut }) {
           )}
         </section>
       </div>
+      {confirmVault && (
+        <ConfirmDialog
+          title={`Delete "${title}"?`}
+          message="This vault and all its keys will be permanently removed. This cannot be undone."
+          confirmLabel="Delete vault"
+          busy={busyDelete}
+          onClose={() => setConfirmVault(false)}
+          onConfirm={removeVault}
+        />
+      )}
+      {pendingKey && (
+        <ConfirmDialog
+          title={`Delete "${pendingKey.config_name || pendingKey.configName}"?`}
+          message="This key will be permanently removed. This cannot be undone."
+          confirmLabel="Delete key"
+          busy={deletingKeyId === pendingKey.id}
+          onClose={() => setPendingKey(null)}
+          onConfirm={() => removeKey(pendingKey.id)}
+        />
+      )}
     </main>
   );
 }

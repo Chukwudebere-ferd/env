@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../lib/api.js';
 import ProjectForm from '../components/ProjectForm.jsx';
+import ConfirmDialog from '../components/ConfirmDialog.jsx';
 import ConsoleSidebar from '../components/ConsoleSidebar.jsx';
 import './Dashboard.css';
 
@@ -30,6 +31,7 @@ export default function Dashboard({ email, onSignOut }) {
   const [query, setQuery] = useState('');
   const [state, setState] = useState({ loading: true, error: '' });
   const [deletingId, setDeletingId] = useState(null);
+  const [pendingDelete, setPendingDelete] = useState(null);
 
   async function load() {
     setState({ loading: true, error: '' });
@@ -42,10 +44,10 @@ export default function Dashboard({ email, onSignOut }) {
   }
 
   async function removeVault(p) {
-    if (!window.confirm(`Delete vault "${p.name}" and all its keys? This cannot be undone.`)) return;
     setDeletingId(p.id);
     try {
       await api.deleteProject(email, p.id);
+      setPendingDelete(null);
       await load();
     } catch (err) {
       setState((s) => ({ ...s, error: err.message }));
@@ -166,8 +168,8 @@ export default function Dashboard({ email, onSignOut }) {
             {state.error ? (
               <div className="dash-error">
                 <p className="error" role="alert">{state.error}</p>
-                <button type="button" className="btn btn-secondary dash-error-btn" onClick={load}>
-                  Retry
+                <button type="button" className="btn btn-secondary dash-error-btn" onClick={load} disabled={state.loading} aria-busy={state.loading}>
+                  {state.loading ? 'Retrying…' : 'Retry'}
                 </button>
               </div>
             ) : (
@@ -189,7 +191,7 @@ export default function Dashboard({ email, onSignOut }) {
                         <button
                           type="button"
                           className="btn btn-secondary btn-sm"
-                          onClick={() => removeVault(p)}
+                          onClick={() => setPendingDelete(p)}
                           disabled={deletingId === p.id}
                           aria-label={`Delete vault ${p.name}`}
                           style={{ marginLeft: 8 }}
@@ -229,6 +231,16 @@ export default function Dashboard({ email, onSignOut }) {
           </div>
         </section>
       </div>
+      {pendingDelete && (
+        <ConfirmDialog
+          title={`Delete "${pendingDelete.name}"?`}
+          message="This vault and all its keys will be permanently removed. This cannot be undone."
+          confirmLabel="Delete vault"
+          busy={deletingId === pendingDelete.id}
+          onClose={() => setPendingDelete(null)}
+          onConfirm={() => removeVault(pendingDelete)}
+        />
+      )}
     </main>
   );
 }

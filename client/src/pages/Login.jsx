@@ -98,8 +98,8 @@ export default function Login() {
               {busy ? 'Sending…' : 'Continue with email'}
             </button>
             <div className="login-divider"><span className="muted login-divider-text">or</span></div>
-            <button type="button" className="btn btn-secondary login-block" onClick={signInGoogle} disabled={busy}>
-              Continue with Google
+            <button type="button" className="btn btn-secondary login-block" onClick={signInGoogle} disabled={busy} aria-busy={busy}>
+              {busy ? 'Continuing…' : 'Continue with Google'}
             </button>
           </form>
         ) : (
@@ -124,8 +124,8 @@ export default function Login() {
             <button type="button" className="btn btn-secondary login-block" onClick={() => { setStep('email'); setCode(''); setError(''); setInfo(''); }} disabled={busy}>
               Use a different email
             </button>
-            <button type="button" className="btn btn-secondary login-block" onClick={sendCode} disabled={busy} style={{ marginTop: 8 }}>
-              Resend code
+            <button type="button" className="btn btn-secondary login-block" onClick={sendCode} disabled={busy} aria-busy={busy} style={{ marginTop: 8 }}>
+              {busy ? 'Sending…' : 'Resend code'}
             </button>
           </form>
         )}
