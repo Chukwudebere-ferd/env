@@ -7,11 +7,46 @@ import ShareDead from '../components/ShareDead.jsx';
 
 const DEAD_RE = /expired|revoked|no views|out of views|share not found/i;
 
+// OTP progress (email + step only, never codes or session tokens) survives a
+// page reload in the same tab. Mobile browsers routinely discard the share tab
+// while the friend is in their email app; without this they restart at email.
+function shareOtpKey(token) {
+  return `share.otp.${token}`;
+}
+
+function readSavedProgress(token) {
+  try {
+    const raw = sessionStorage.getItem(shareOtpKey(token));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed.email === 'string') return parsed;
+  } catch {
+    // storage unavailable or corrupt; start fresh
+  }
+  return null;
+}
+
+function saveProgress(token, data) {
+  try {
+    sessionStorage.setItem(shareOtpKey(token), JSON.stringify(data));
+  } catch {
+    // storage unavailable; session-only
+  }
+}
+
+function clearProgress(token) {
+  try {
+    sessionStorage.removeItem(shareOtpKey(token));
+  } catch {
+    // storage unavailable; nothing to clear
+  }
+}
+
 export default function ShareAccess() {
   const { token } = useParams();
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(() => readSavedProgress(token)?.email || '');
   const [code, setCode] = useState('');
-  const [step, setStep] = useState('email');
+  const [step, setStep] = useState(() => (readSavedProgress(token)?.step === 'code' ? 'code' : 'email'));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
@@ -88,6 +123,7 @@ export default function ShareAccess() {
     try {
       await api.shareRequestOtp(token, v);
       setStep('code');
+      saveProgress(token, { email: v, step: 'code' });
       setInfo(`Code sent to ${v}. It expires in 10 minutes.`);
     } catch (err) {
       setError(err.message);
@@ -128,6 +164,7 @@ export default function ShareAccess() {
     setCode('');
     setError('');
     setInfo('');
+    saveProgress(token, { email, step: 'email' });
   }
 
   function resetShare() {
@@ -139,6 +176,7 @@ export default function ShareAccess() {
     setError('');
     setInfo('');
     setStep('email');
+    clearProgress(token);
   }
 
   async function loadKeys(sessionToken) {
