@@ -6,8 +6,7 @@ export default function CopyButton({ text, label = 'Copy' }) {
   return (
     <button
       type="button"
-      className="btn btn-secondary"
-      style={{ height: 32, padding: '0 10px', fontSize: 13 }}
+      className="btn btn-secondary btn-xs"
       onClick={async () => {
         const ok = await copyText(text);
         setDone(ok);

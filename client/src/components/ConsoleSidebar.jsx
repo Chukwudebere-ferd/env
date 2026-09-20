@@ -26,20 +26,20 @@ function CodeIcon() {
   );
 }
 
-export default function ConsoleSidebar({ active, email, onSignOut }) {
+export default function ConsoleSidebar({ active, email, onSignOut, id = 'console-nav', onNavigate }) {
   return (
-    <aside className="rail" aria-label="Console navigation">
+    <aside className="rail" id={id} aria-label="Console navigation">
       <Link to="/dashboard" className="rail-brand" aria-label="env console">
         <span className="brand-mark" aria-hidden="true">~/</span>
-        <span className="brand-name" style={{ fontSize: 17 }}>env</span>
+        <span className="brand-name rail-brand-name">env</span>
       </Link>
 
       <nav className="rail-section" aria-label="Workspace">
         <p className="rail-label">Workspace</p>
-        <Link to="/dashboard" className={active === 'vaults' ? 'rail-link active' : 'rail-link'} aria-current={active === 'vaults' ? 'page' : undefined}>
+        <Link to="/dashboard" onClick={onNavigate} className={active === 'vaults' ? 'rail-link active' : 'rail-link'} aria-current={active === 'vaults' ? 'page' : undefined}>
           <VaultIcon /> Vaults
         </Link>
-        <Link to="/" className="rail-link">
+        <Link to="/" onClick={onNavigate} className="rail-link">
           <GlobeIcon /> Overview
         </Link>
         <a className="rail-link" href="https://github.com/Chukwudebere-ferd/env" target="_blank" rel="noreferrer">
@@ -48,13 +48,13 @@ export default function ConsoleSidebar({ active, email, onSignOut }) {
       </nav>
 
       <div className="rail-foot">
-        <p style={{ fontSize: 13, wordBreak: 'break-all', padding: '0 10px' }}>{email}</p>
+        <p className="rail-email">{email}</p>
         {onSignOut && (
-          <button type="button" className="btn btn-secondary" style={{ height: 36, width: '100%' }} onClick={onSignOut}>
+          <button type="button" className="btn btn-secondary rail-btn" onClick={onSignOut}>
             Sign out
           </button>
         )}
-        <p className="muted" style={{ fontSize: 12, padding: '0 10px' }}>
+        <p className="muted rail-hint">
           Codes last about 30 minutes
         </p>
       </div>

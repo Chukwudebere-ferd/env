@@ -1,16 +1,10 @@
 // Projects router: create + list for the signed-in user.
-// Auth: v1 stub uses x-user-email header until better-auth wiring lands.
+// Auth: session via requireUser (better-auth cookies).
 const express = require('express');
 const { getPool } = require('../db');
+const { requireUser } = require('../requireUser');
 
 const router = express.Router();
-
-function requireUser(req, res, next) {
-  const email = req.header('x-user-email');
-  if (!email) return res.status(401).json({ error: 'Missing x-user-email (auth stub, better-auth pending)' });
-  req.userEmail = email;
-  next();
-}
 
 router.use(requireUser);
 

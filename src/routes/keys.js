@@ -2,19 +2,13 @@
 // Copy buttons are frontend; API returns plaintext only after OTP verification.
 const express = require('express');
 const { getPool } = require('../db');
+const { requireUser } = require('../requireUser');
 const { encrypt, decrypt } = require('../crypto');
 const { parseKeyContent } = require('../parseEnv');
 const { hashCode } = require('../otp');
 const { requirePermission } = require('../rbac');
 
 const router = express.Router();
-
-function requireUser(req, res, next) {
-  const email = req.header('x-user-email');
-  if (!email) return res.status(401).json({ error: 'Missing x-user-email (auth stub, better-auth pending)' });
-  req.userEmail = email;
-  next();
-}
 
 router.use(requireUser);
 

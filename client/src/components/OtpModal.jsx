@@ -23,16 +23,16 @@ export default function OtpModal({ onClose, onRequest, onVerify, status }) {
         className="card modal"
         onClick={(e) => e.stopPropagation()}
       >
-        <p className="muted" style={{ fontSize: 13 }}>Step-up verification</p>
-        <h2 style={{ fontSize: 28, marginTop: 8 }}>Verify to reveal</h2>
-        <p className="muted" style={{ margin: '12px 0' }}>
+        <p className="muted modal-eyebrow">Step-up verification</p>
+        <h2 className="modal-title">Verify to reveal</h2>
+        <p className="muted modal-text">
           A 6 digit code goes to your email. One code opens this vault for about 30 minutes.
         </p>
-        <button type="button" className="btn btn-secondary" style={{ height: 40 }} onClick={onRequest}>
+        <button type="button" className="btn btn-secondary btn-md" onClick={onRequest}>
           Send code
         </button>
         <form
-          style={{ marginTop: 16 }}
+          className="modal-form"
           onSubmit={async (e) => {
             e.preventDefault();
             if (code.trim().length < 6) return;
@@ -48,8 +48,7 @@ export default function OtpModal({ onClose, onRequest, onVerify, status }) {
           <input
             id="otp"
             ref={inputRef}
-            className="input mono"
-            style={{ margin: '8px 0 12px', letterSpacing: '0.3em', textAlign: 'center', fontSize: 20 }}
+            className="input mono modal-input"
             value={code}
             onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
             inputMode="numeric"
@@ -67,7 +66,7 @@ export default function OtpModal({ onClose, onRequest, onVerify, status }) {
           </div>
         </form>
         {status && (
-          <p style={{ marginTop: 12 }} className={status.ok ? 'muted' : 'error'} role={status.ok ? 'status' : 'alert'}>
+          <p className={status.ok ? 'muted modal-status' : 'error modal-status'} role={status.ok ? 'status' : 'alert'}>
             {status.msg}
           </p>
         )}

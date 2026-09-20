@@ -50,6 +50,12 @@ body {
     flex-direction: column;
 }
 
+/* Console routes break out of the marketing cage. */
+#root:has(.page-console) {
+    max-width: none;
+    padding: 0;
+}
+
 h1,
 h2,
 h3 {

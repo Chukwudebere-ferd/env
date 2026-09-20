@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import Login from './pages/Login.jsx';
 import Dashboard from './pages/Dashboard.jsx';
@@ -6,33 +5,30 @@ import ProjectDetail from './pages/ProjectDetail.jsx';
 import Landing from './pages/Landing.jsx';
 import SiteHeader from './components/SiteHeader.jsx';
 import SiteFooter from './components/SiteFooter.jsx';
+import { authClient, useSession } from './lib/auth-client.js';
 import './App.css';
 
-const KEY = 'env.email';
-
-function readStoredEmail() {
-  try {
-    const v = localStorage.getItem(KEY);
-    return v && v.includes('@') ? v : '';
-  } catch {
-    return '';
-  }
-}
-
 export default function App() {
-  const [email, setEmail] = useState(() => readStoredEmail());
+  const { data: session, isPending } = useSession();
+  const email = session?.user?.email || '';
   const location = useLocation();
   const isConsole = location.pathname.startsWith('/dashboard');
-  const signOut = () => setEmail('');
 
-  useEffect(() => {
+  const signOut = async () => {
     try {
-      if (email) localStorage.setItem(KEY, email);
-      else localStorage.removeItem(KEY);
+      await authClient.signOut();
     } catch {
-      // storage unavailable; session-only
+      // session already gone; guard below will redirect
     }
-  }, [email]);
+  };
+
+  if (isPending) {
+    return (
+      <main className="page" id="main">
+        <p className="muted" role="status" style={{ padding: 32 }}>Loading session…</p>
+      </main>
+    );
+  }
 
   return (
     <>
@@ -42,7 +38,7 @@ export default function App() {
       <div className={isConsole ? 'page-console' : undefined}>
         <Routes>
           <Route path="/" element={email ? <Navigate to="/dashboard" replace /> : <Landing />} />
-          <Route path="/login" element={email ? <Navigate to="/dashboard" replace /> : <Login setEmail={setEmail} />} />
+          <Route path="/login" element={email ? <Navigate to="/dashboard" replace /> : <Login />} />
           <Route path="/dashboard" element={email ? <Dashboard email={email} onSignOut={signOut} /> : <Navigate to="/login" replace />} />
           <Route path="/dashboard/:projectId" element={email ? <ProjectDetail email={email} onSignOut={signOut} /> : <Navigate to="/login" replace />} />
           <Route path="*" element={<Navigate to={email ? '/dashboard' : '/'} replace />} />

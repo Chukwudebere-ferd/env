@@ -5,11 +5,11 @@ export default function KeyRow({ entry, revealed, onRevealOne }) {
   const added = entry.created_at || entry.createdAt;
   return (
     <tr>
-      <td className="mono" style={{ wordBreak: 'break-all' }}>{name}</td>
-      <td className="mono" style={{ wordBreak: 'break-all', color: revealed ? 'var(--color-accent)' : 'var(--color-mute)' }}>
+      <td className="mono detail-key-name">{name}</td>
+      <td className={revealed ? 'mono detail-key-value revealed' : 'mono detail-key-value masked'}>
         {revealed || '••••••••••'}
       </td>
-      <td className="mono muted" style={{ whiteSpace: 'nowrap' }}>
+      <td className="mono muted detail-key-date">
         {added ? new Date(added).toLocaleDateString() : '—'}
       </td>
       <td className="num">
@@ -18,7 +18,7 @@ export default function KeyRow({ entry, revealed, onRevealOne }) {
           {revealed ? (
             <CopyButton text={revealed} label="Copy value" />
           ) : (
-            <button type="button" className="btn btn-secondary" style={{ height: 34, fontSize: 13 }} onClick={onRevealOne}>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={onRevealOne}>
               Reveal
             </button>
           )}

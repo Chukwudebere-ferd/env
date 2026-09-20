@@ -1,11 +1,21 @@
-// API client for env backend. Auth stub: x-user-email header until better-auth lands.
+// API client for env backend. Session cookies are primary; x-user-email is
+// kept as a transitional fallback until the server drops the legacy header.
 const BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 function headers(email, extra = {}) {
   return {
     'Content-Type': 'application/json',
-    'x-user-email': email || '',
+    ...(email ? { 'x-user-email': email } : {}),
     ...extra,
+  };
+}
+
+function opts(method, email, body) {
+  return {
+    method,
+    headers: headers(email),
+    credentials: 'include',
+    ...(body ? { body: JSON.stringify(body) } : {}),
   };
 }
 
@@ -16,33 +26,17 @@ async function handle(res) {
 }
 
 export const api = {
-  listProjects: (email) => fetch(`${BASE}/api/projects`, { headers: headers(email) }).then(handle),
+  listProjects: (email) => fetch(`${BASE}/api/projects`, { headers: headers(email), credentials: 'include' }).then(handle),
   createProject: (email, name) =>
-    fetch(`${BASE}/api/projects`, {
-      method: 'POST',
-      headers: headers(email),
-      body: JSON.stringify({ name }),
-    }).then(handle),
+    fetch(`${BASE}/api/projects`, opts('POST', email, { name })).then(handle),
   listKeys: (email, projectId) =>
-    fetch(`${BASE}/api/keys?projectId=${encodeURIComponent(projectId)}`, { headers: headers(email) }).then(handle),
+    fetch(`${BASE}/api/keys?projectId=${encodeURIComponent(projectId)}`, { headers: headers(email), credentials: 'include' }).then(handle),
   addKeys: (email, payload) =>
-    fetch(`${BASE}/api/keys`, { method: 'POST', headers: headers(email), body: JSON.stringify(payload) }).then(handle),
+    fetch(`${BASE}/api/keys`, opts('POST', email, payload)).then(handle),
   requestOtp: (email, projectId) =>
-    fetch(`${BASE}/api/otp/request`, {
-      method: 'POST',
-      headers: headers(email),
-      body: JSON.stringify({ projectId }),
-    }).then(handle),
+    fetch(`${BASE}/api/otp/request`, opts('POST', email, { projectId })).then(handle),
   verifyOtp: (email, projectId, code) =>
-    fetch(`${BASE}/api/otp/verify`, {
-      method: 'POST',
-      headers: headers(email),
-      body: JSON.stringify({ projectId, code }),
-    }).then(handle),
+    fetch(`${BASE}/api/otp/verify`, opts('POST', email, { projectId, code })).then(handle),
   revealKeys: (email, projectId, keyId) =>
-    fetch(`${BASE}/api/keys/reveal`, {
-      method: 'POST',
-      headers: headers(email),
-      body: JSON.stringify({ projectId, keyId }),
-    }).then(handle),
+    fetch(`${BASE}/api/keys/reveal`, opts('POST', email, { projectId, keyId })).then(handle),
 };

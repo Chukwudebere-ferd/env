@@ -5,6 +5,7 @@ import KeyRow from '../components/KeyRow.jsx';
 import KeyAddForm from '../components/KeyAddForm.jsx';
 import OtpModal from '../components/OtpModal.jsx';
 import ConsoleSidebar from '../components/ConsoleSidebar.jsx';
+import './ProjectDetail.css';
 
 const WINDOW_MS = 30 * 60 * 1000;
 
@@ -34,6 +35,7 @@ export default function ProjectDetail({ email, onSignOut }) {
   const [otpStatus, setOtpStatus] = useState(null);
   const [state, setState] = useState({ loading: true, error: '' });
   const [pendingKeyId, setPendingKeyId] = useState(null);
+  const [navOpen, setNavOpen] = useState(false);
   const [tab, setTab] = useState('keys');
   const [q, setQ] = useState('');
 
@@ -55,6 +57,15 @@ export default function ProjectDetail({ email, onSignOut }) {
   }, [email, projectId]);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    if (!navOpen) return;
+    function onKey(e) {
+      if (e.key === 'Escape') setNavOpen(false);
+    }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [navOpen]);
 
   useEffect(() => {
     if (!verifiedAt) return;
@@ -94,44 +105,59 @@ export default function ProjectDetail({ email, onSignOut }) {
 
   return (
     <main className="page" id="main">
-      <div className="app-shell">
-        <ConsoleSidebar active="vaults" email={email} onSignOut={onSignOut} />
+      <div className="app-shell" data-nav={navOpen ? 'open' : 'closed'}>
+        <ConsoleSidebar active="vaults" email={email} onSignOut={onSignOut} onNavigate={() => setNavOpen(false)} />
+        {navOpen && (
+          <button type="button" className="nav-overlay" aria-label="Close menu" onClick={() => setNavOpen(false)} />
+        )}
 
         <section className="work" aria-labelledby="vault-title">
           <div className="topbar">
-            <div>
-              <nav className="crumb" aria-label="Breadcrumb">
-                <Link to="/dashboard">Vaults</Link><span aria-hidden="true">/</span><strong>{title}</strong>
-              </nav>
-              <h1 className="work-title" id="vault-title">{title}</h1>
-              <p className="work-sub mono">ID {String(projectId).slice(0, 8)}</p>
+            <div className="row">
+              <button
+                type="button"
+                className="nav-burger"
+                aria-expanded={navOpen}
+                aria-controls="console-nav"
+                aria-label={navOpen ? 'Close menu' : 'Open menu'}
+                onClick={() => setNavOpen((v) => !v)}
+              >
+                <span aria-hidden="true" /><span aria-hidden="true" /><span aria-hidden="true" />
+              </button>
+              <div>
+                <nav className="crumb" aria-label="Breadcrumb">
+                  <Link to="/dashboard">Vaults</Link><span aria-hidden="true">/</span><strong>{title}</strong>
+                </nav>
+                <h1 className="work-title" id="vault-title">{title}</h1>
+                <p className="work-sub mono detail-id">ID {String(projectId).slice(0, 8)}</p>
+              </div>
             </div>
             <div className="topbar-actions">
-              <button type="button" className="btn btn-secondary" style={{ height: 40 }} onClick={() => { setPendingKeyId(null); setShowOtp(true); }}>
+              <button type="button" className="btn btn-secondary detail-topbar-btn" onClick={() => { setPendingKeyId(null); setShowOtp(true); }}>
                 Unlock
               </button>
-              <button type="button" className="btn btn-accent" style={{ height: 40 }} onClick={() => reveal(null)}>
+              <button type="button" className="btn btn-accent detail-topbar-btn" onClick={() => reveal(null)}>
                 Reveal all
               </button>
             </div>
           </div>
 
-          <div className={otpOpen ? 'card lock-strip open' : 'card lock-strip'} role="status">
-            <div className="lock-state">
-              <span className="lock-dot" aria-hidden="true" />
+          <div className={otpOpen ? 'card detail-lock open' : 'card detail-lock'} role="status">
+            <div className="detail-lock-state">
+              <span className="detail-lock-dot" aria-hidden="true" />
               <div>
                 <b>{otpOpen ? `Open for about ${openMins} more min` : 'Locked'}</b>
                 <p>{otpOpen ? 'Reveals and copies work until the window closes.' : 'Confirm the emailed code once. It lasts about 30 minutes.'}</p>
               </div>
             </div>
             {!otpOpen && (
-              <button type="button" className="btn btn-secondary" style={{ height: 36 }} onClick={() => { setPendingKeyId(null); setShowOtp(true); }}>
+              <button type="button" className="btn btn-secondary detail-lock-btn" onClick={() => { setPendingKeyId(null); setShowOtp(true); }}>
                 Send code
               </button>
             )}
           </div>
 
-          <div className="tabs seg" role="tablist" aria-label="Vault sections">
+          <div className="tabs seg detail-tabs" role="tablist" aria-label="Vault sections">
             <button type="button" role="tab" aria-selected={tab === 'keys'} onClick={() => setTab('keys')}>Keys</button>
             <button type="button" role="tab" aria-selected={tab === 'add'} onClick={() => setTab('add')}>Add and import</button>
           </div>
@@ -155,17 +181,16 @@ export default function ProjectDetail({ email, onSignOut }) {
             <div className="card ledger">
               <div className="panel-head">
                 <h2>Keys</h2>
-                <div className="row" style={{ flexWrap: 'wrap' }}>
+                <div className="row detail-panel-filters">
                   <label className="visually-hidden" htmlFor="key-search">Search keys</label>
                   <input
                     id="key-search"
-                    className="input"
-                    style={{ maxWidth: 240 }}
+                    className="input detail-search"
                     value={q}
                     onChange={(e) => setQ(e.target.value)}
                     placeholder="Search keys"
                   />
-                  <span className="muted" style={{ fontSize: 12 }}>{visible.length} shown</span>
+                  <span className="muted detail-count">{visible.length} shown</span>
                 </div>
               </div>
 
@@ -197,9 +222,9 @@ export default function ProjectDetail({ email, onSignOut }) {
               )}
 
               {state.error ? (
-                <div style={{ padding: 20 }}>
+                <div className="detail-error">
                   <p className="error" role="alert">{state.error}</p>
-                  <button type="button" className="btn btn-secondary" style={{ height: 40, marginTop: 12 }} onClick={load}>
+                  <button type="button" className="btn btn-secondary detail-error-btn" onClick={load}>
                     Retry
                   </button>
                 </div>
@@ -221,7 +246,7 @@ export default function ProjectDetail({ email, onSignOut }) {
                 <div className="empty">
                   <h2>No keys yet</h2>
                   <p>Add one manually or paste NAME=value lines. Lines starting with # are ignored.</p>
-                  <button type="button" className="btn btn-accent" style={{ height: 40, marginTop: 16 }} onClick={() => setTab('add')}>
+                  <button type="button" className="btn btn-accent btn-md detail-empty-btn" onClick={() => setTab('add')}>
                     Add keys
                   </button>
                 </div>
@@ -234,7 +259,7 @@ export default function ProjectDetail({ email, onSignOut }) {
               )}
 
               {!state.loading && !state.error && keys.length > 0 && (
-                <div className="table-foot muted" style={{ fontSize: 12 }}>
+                <div className="table-foot muted detail-foot">
                   <span>{visible.length} of {keys.length} keys</span>
                   <span>{revealedCount} revealed</span>
                 </div>

@@ -8,7 +8,7 @@ export default function SiteHeader({ email, onSignOut }) {
           <span className="brand-mark" aria-hidden="true">~/</span>
           <span className="brand-name">env</span>
         </Link>
-        <div className="row">
+        <div className="row header-actions">
           <nav className="pill-nav" aria-label="Primary">
             {email ? (
               <Link to="/dashboard">Console</Link>
@@ -20,11 +20,11 @@ export default function SiteHeader({ email, onSignOut }) {
             )}
           </nav>
           {email ? (
-            <button type="button" className="btn btn-secondary" style={{ height: 40 }} onClick={onSignOut}>
+            <button type="button" className="btn btn-secondary header-btn" onClick={onSignOut}>
               Sign out
             </button>
           ) : (
-            <Link to="/login" className="btn" style={{ height: 40 }}>Get started</Link>
+            <Link to="/login" className="btn header-btn">Get started</Link>
           )}
         </div>
       </div>

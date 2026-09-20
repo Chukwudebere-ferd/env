@@ -3,17 +3,11 @@
 // until expiry (allows view one or all within 30 min per spec).
 const express = require('express');
 const { getPool } = require('../db');
+const { requireUser } = require('../requireUser');
 const { generateNumericOtp, expiryFromNow, hashCode } = require('../otp');
 const { sendMail } = require('../mailer');
 
 const router = express.Router();
-
-function requireUser(req, res, next) {
-  const email = req.header('x-user-email');
-  if (!email) return res.status(401).json({ error: 'Missing x-user-email (auth stub, better-auth pending)' });
-  req.userEmail = email;
-  next();
-}
 
 router.use(requireUser);
 

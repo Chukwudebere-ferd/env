@@ -8,10 +8,16 @@ const cors = require('cors');
 const projectsRouter = require('./routes/projects');
 const keysRouter = require('./routes/keys');
 const otpRouter = require('./routes/otp');
+const { auth } = require('./auth');
+const { toNodeHandler } = require('better-auth/node');
 
 const app = express();
 app.use(helmet());
-app.use(cors({ origin: (process.env.CLIENT_URL || 'http://localhost:5173').split(',') }));
+app.use(cors({
+  origin: (process.env.CLIENT_URL || 'http://localhost:5173').split(','),
+  credentials: true,
+}));
+app.all('/api/auth/*splat', toNodeHandler(auth));
 app.use(express.json({ limit: '1mb' }));
 
 app.get('/health', (_req, res) => res.json({ ok: true }));

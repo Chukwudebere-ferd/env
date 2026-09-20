@@ -10,7 +10,7 @@ function hasPermission(_userEmail, permission) {
 
 function requirePermission(permission) {
   return (req, res, next) => {
-    const email = req.userEmail || req.header('x-user-email');
+    const email = req.userEmail;
     if (!email) return res.status(401).json({ error: 'Unauthorized' });
     if (!hasPermission(email, permission)) {
       return res.status(403).json({ error: `Missing permission: ${permission}` });

@@ -5,8 +5,7 @@ export default function ProjectForm({ onCreate }) {
   const [busy, setBusy] = useState(false);
   return (
     <form
-      className="row"
-      style={{ flexWrap: 'wrap' }}
+      className="row form-row-wrap"
       onSubmit={async (e) => {
         e.preventDefault();
         if (!name.trim() || busy) return;
@@ -19,19 +18,18 @@ export default function ProjectForm({ onCreate }) {
         }
       }}
     >
-      <div style={{ flex: '1 1 220px' }}>
-        <label htmlFor="project-name" className="muted" style={{ fontSize: 13 }}>New vault name</label>
+      <div className="form-field-flex">
+        <label htmlFor="project-name" className="muted form-label-sm">New vault name</label>
         <input
           id="project-name"
-          className="input mono"
-          style={{ marginTop: 4 }}
+          className="input mono form-input-offset"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="my-saas"
           required
         />
       </div>
-      <button type="submit" className="btn btn-accent" disabled={busy} style={{ alignSelf: 'flex-end' }}>
+      <button type="submit" className="btn btn-accent form-submit-end" disabled={busy}>
         {busy ? 'Creating…' : 'Create vault'}
       </button>
     </form>
