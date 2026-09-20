@@ -62,6 +62,19 @@ router.get('/', async (req, res) => {
   res.json(rows);
 });
 
+// DELETE /api/keys/:id — ownership checked via parent project
+router.delete('/:id', async (req, res) => {
+  const pool = getPool();
+  const { rows } = await pool.query(
+    `DELETE FROM api_keys USING projects
+     WHERE api_keys.id = $1 AND api_keys.project_id = projects.id AND projects.user_email = $2
+     RETURNING api_keys.id`,
+    [req.params.id, req.userEmail]
+  );
+  if (!rows.length) return res.status(404).json({ error: 'Key not found' });
+  res.json({ deleted: true, id: rows[0].id });
+});
+
 // POST /api/keys/reveal — { projectId, keyId? } — requires view_secrets + valid OTP window
 // Audit: one row per key revealed (user_email, key_id, project_id, action, ip).
 router.post('/reveal', requirePermission('view_secrets'), async (req, res) => {

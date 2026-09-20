@@ -29,6 +29,7 @@ export default function Dashboard({ email, onSignOut }) {
   const [navOpen, setNavOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [state, setState] = useState({ loading: true, error: '' });
+  const [deletingId, setDeletingId] = useState(null);
 
   async function load() {
     setState({ loading: true, error: '' });
@@ -37,6 +38,19 @@ export default function Dashboard({ email, onSignOut }) {
       setState({ loading: false, error: '' });
     } catch (err) {
       setState({ loading: false, error: err.message });
+    }
+  }
+
+  async function removeVault(p) {
+    if (!window.confirm(`Delete vault "${p.name}" and all its keys? This cannot be undone.`)) return;
+    setDeletingId(p.id);
+    try {
+      await api.deleteProject(email, p.id);
+      await load();
+    } catch (err) {
+      setState((s) => ({ ...s, error: err.message }));
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -172,6 +186,16 @@ export default function Dashboard({ email, onSignOut }) {
                         <Link to={`/dashboard/${p.id}`} className="btn btn-secondary btn-sm dash-open-btn">
                           Open
                         </Link>
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          onClick={() => removeVault(p)}
+                          disabled={deletingId === p.id}
+                          aria-label={`Delete vault ${p.name}`}
+                          style={{ marginLeft: 8 }}
+                        >
+                          {deletingId === p.id ? 'Deleting…' : 'Delete'}
+                        </button>
                       </td>
                     </tr>
                   ))}

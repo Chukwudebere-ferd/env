@@ -41,7 +41,8 @@ const auth = betterAuth({
         await sendMail({
           to: email,
           subject,
-          html: `<p>Your verification code is <strong>${otp}</strong>. It expires soon. If you did not request it, ignore this email.</p>`,
+          html: `<p>Hi,</p><p>Your env code is <strong>${otp}</strong>. It expires soon. If you did not request it, you can ignore this email.</p><p>Thanks,<br>env</p>`,
+          text: `Hi,\n\nYour env code is ${otp}. It expires soon. If you did not request it, you can ignore this email.\n\nThanks,\nenv`,
         });
       },
     }),

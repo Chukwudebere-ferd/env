@@ -1,8 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 
+const RESEND_COOLDOWN_MS = 30 * 1000;
+
 export default function OtpModal({ onClose, onRequest, onVerify, status }) {
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sentAt, setSentAt] = useState(null);
+  const [now, setNow] = useState(Date.now());
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -13,6 +18,25 @@ export default function OtpModal({ onClose, onRequest, onVerify, status }) {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose]);
+
+  useEffect(() => {
+    if (!sentAt) return;
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [sentAt]);
+
+  const cooldownLeft = sentAt ? Math.max(0, Math.ceil((RESEND_COOLDOWN_MS - (now - sentAt)) / 1000)) : 0;
+
+  async function handleSend() {
+    setSending(true);
+    try {
+      await onRequest();
+      setSentAt(Date.now());
+      setNow(Date.now());
+    } finally {
+      setSending(false);
+    }
+  }
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -28,9 +52,12 @@ export default function OtpModal({ onClose, onRequest, onVerify, status }) {
         <p className="muted modal-text">
           A 6 digit code goes to your email. One code opens this vault for about 30 minutes.
         </p>
-        <button type="button" className="btn btn-secondary btn-md" onClick={onRequest}>
-          Send code
+        <button type="button" className="btn btn-secondary btn-md" onClick={handleSend} disabled={sending || cooldownLeft > 0}>
+          {sending ? 'Sending…' : cooldownLeft > 0 ? `Resend in ${cooldownLeft}s` : sentAt ? 'Resend code' : 'Send code'}
         </button>
+        {sentAt && !sending && (
+          <p className="muted modal-status" role="status">Code sent. Check your inbox and spam folder.</p>
+        )}
         <form
           className="modal-form"
           onSubmit={async (e) => {

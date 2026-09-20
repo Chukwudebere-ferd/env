@@ -32,7 +32,8 @@ router.post('/request', async (req, res) => {
   await sendMail({
     to: req.userEmail,
     subject: 'Your env verification code',
-    html: `<p>Your verification code is <strong>${code}</strong>. Valid for ${ttl} minutes.</p>`,
+    html: `<p>Hi,</p><p>Your env code is <strong>${code}</strong>. It is valid for ${ttl} minutes.</p><p>Thanks,<br>env</p>`,
+    text: `Hi,\n\nYour env code is ${code}. It is valid for ${ttl} minutes.\n\nThanks,\nenv`,
   });
 
   res.json({ sent: true, expiresAt });

@@ -39,4 +39,8 @@ export const api = {
     fetch(`${BASE}/api/otp/verify`, opts('POST', email, { projectId, code })).then(handle),
   revealKeys: (email, projectId, keyId) =>
     fetch(`${BASE}/api/keys/reveal`, opts('POST', email, { projectId, keyId })).then(handle),
+  deleteProject: (email, projectId) =>
+    fetch(`${BASE}/api/projects/${encodeURIComponent(projectId)}`, { ...opts('DELETE', email) }).then(handle),
+  deleteKey: (email, keyId) =>
+    fetch(`${BASE}/api/keys/${encodeURIComponent(keyId)}`, { ...opts('DELETE', email) }).then(handle),
 };

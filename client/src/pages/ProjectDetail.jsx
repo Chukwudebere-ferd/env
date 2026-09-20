@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../lib/api.js';
 import KeyRow from '../components/KeyRow.jsx';
 import KeyAddForm from '../components/KeyAddForm.jsx';
@@ -26,6 +26,7 @@ function SkeletonKeyRows({ rows = 5 }) {
 
 export default function ProjectDetail({ email, onSignOut }) {
   const { projectId } = useParams();
+  const nav = useNavigate();
   const [keys, setKeys] = useState([]);
   const [projectName, setProjectName] = useState('');
   const [revealed, setRevealed] = useState({});
@@ -38,6 +39,7 @@ export default function ProjectDetail({ email, onSignOut }) {
   const [navOpen, setNavOpen] = useState(false);
   const [tab, setTab] = useState('keys');
   const [q, setQ] = useState('');
+  const [busyDelete, setBusyDelete] = useState(false);
 
   const load = useCallback(async () => {
     setState({ loading: true, error: '' });
@@ -91,6 +93,34 @@ export default function ProjectDetail({ email, onSignOut }) {
     }
   }
 
+  async function removeKey(id, name) {
+    if (!window.confirm(`Delete key "${name}"? This cannot be undone.`)) return;
+    try {
+      await api.deleteKey(email, id);
+      setRevealed((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+      await load();
+    } catch (err) {
+      setState((s) => ({ ...s, error: err.message }));
+    }
+  }
+
+  async function removeVault() {
+    if (!window.confirm(`Delete vault "${title}" and all its keys? This cannot be undone.`)) return;
+    setBusyDelete(true);
+    try {
+      await api.deleteProject(email, projectId);
+      nav('/dashboard', { replace: true });
+    } catch (err) {
+      setState((s) => ({ ...s, error: err.message }));
+    } finally {
+      setBusyDelete(false);
+    }
+  }
+
   const visible = useMemo(() => {
     const needle = q.trim().toLowerCase();
     if (!needle) return keys;
@@ -138,6 +168,9 @@ export default function ProjectDetail({ email, onSignOut }) {
               </button>
               <button type="button" className="btn btn-accent detail-topbar-btn" onClick={() => reveal(null)}>
                 Reveal all
+              </button>
+              <button type="button" className="btn btn-secondary detail-topbar-btn" onClick={removeVault} disabled={busyDelete}>
+                {busyDelete ? 'Deleting…' : 'Delete vault'}
               </button>
             </div>
           </div>
@@ -236,7 +269,13 @@ export default function ProjectDetail({ email, onSignOut }) {
                   <tbody>
                     {state.loading && <SkeletonKeyRows />}
                     {!state.loading && visible.map((k) => (
-                      <KeyRow key={k.id} entry={k} revealed={revealed[k.id]} onRevealOne={() => reveal(k.id)} />
+                      <KeyRow
+                        key={k.id}
+                        entry={k}
+                        revealed={revealed[k.id]}
+                        onRevealOne={() => reveal(k.id)}
+                        onDelete={() => removeKey(k.id, k.config_name || k.configName)}
+                      />
                     ))}
                   </tbody>
                 </table>
