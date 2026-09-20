@@ -215,6 +215,27 @@ export default function Landing() {
         </ol>
       </section>
 
+      <section className="landing-section" aria-labelledby="share-title">
+        <div className="landing-section-head">
+          <p className="mono landing-eyebrow">SHARE LINKS · NO ACCOUNT FOR GUESTS</p>
+          <h2 id="share-title">Share a vault without pasting secrets in chat</h2>
+          <p>Invite one email. The link stays locked until they verify a code sent to that address. Each reveal spends one view.</p>
+        </div>
+        <ol className="landing-steps">
+          {[
+            ['1', 'Invite one email', 'Link is tied to friend@company.com. Set 15 min to 7 days and 1 to 100 views.'],
+            ['2', 'Link alone opens nothing', 'Guest requests a 6 digit code to the invited address. No account, no password.'],
+            ['3', 'Views burn down, revoke anytime', 'Masked list stays free. Each reveal spends 1 view. Every open is logged.'],
+          ].map(([n, t, b]) => (
+            <li key={n} className="card landing-step-card">
+              <span className="landing-step-num mono">{n}</span>
+              <h3>{t}</h3>
+              <p className="muted landing-step-text">{b}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
       <section className="landing-section" aria-labelledby="oss-title">
         <div className="landing-split">
           <div>

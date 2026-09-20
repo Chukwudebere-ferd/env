@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import Login from './pages/Login.jsx';
+import ShareAccess from './pages/ShareAccess.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import ProjectDetail from './pages/ProjectDetail.jsx';
 import Landing from './pages/Landing.jsx';
@@ -39,6 +40,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={email ? <Navigate to="/dashboard" replace /> : <Landing />} />
           <Route path="/login" element={email ? <Navigate to="/dashboard" replace /> : <Login />} />
+          <Route path="/s/:token" element={<ShareAccess />} />
           <Route path="/dashboard" element={email ? <Dashboard email={email} onSignOut={signOut} /> : <Navigate to="/login" replace />} />
           <Route path="/dashboard/:projectId" element={email ? <ProjectDetail email={email} onSignOut={signOut} /> : <Navigate to="/login" replace />} />
           <Route path="*" element={<Navigate to={email ? '/dashboard' : '/'} replace />} />

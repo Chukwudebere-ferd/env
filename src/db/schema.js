@@ -40,6 +40,40 @@ const auditLogs = pgTable('audit_logs', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 }, (t) => [index('idx_audit_user_project').on(t.userEmail, t.projectId)]);
 
+// Share links: owner invites collaborator email, time-boxed link + max reveal uses.
+// Token plaintext is shown once; only sha256(token) is stored. No account needed.
+const projectShares = pgTable('project_shares', {
+  id: serial('id').primaryKey(),
+  projectId: integer('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
+  ownerEmail: text('owner_email').notNull(),
+  collaboratorEmail: text('collaborator_email').notNull(),
+  tokenHash: text('token_hash').notNull().unique(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  maxUses: integer('max_uses').notNull(),
+  usesCount: integer('uses_count').default(0),
+  revoked: boolean('revoked').default(false),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+}, (t) => [index('idx_shares_project').on(t.projectId), index('idx_shares_token').on(t.tokenHash)]);
+
+const shareOtps = pgTable('share_otps', {
+  id: serial('id').primaryKey(),
+  shareId: integer('share_id').notNull().references(() => projectShares.id, { onDelete: 'cascade' }),
+  codeHash: text('code_hash').notNull(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  consumed: boolean('consumed').default(false),
+  attempts: integer('attempts').default(0),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+}, (t) => [index('idx_share_otps_share').on(t.shareId)]);
+
+// Short-lived session after OTP verify: 30-min reveal window for the collaborator.
+const shareSessions = pgTable('share_sessions', {
+  id: serial('id').primaryKey(),
+  shareId: integer('share_id').notNull().references(() => projectShares.id, { onDelete: 'cascade' }),
+  tokenHash: text('token_hash').notNull().unique(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+}, (t) => [index('idx_share_sessions_share').on(t.shareId), index('idx_share_sessions_token').on(t.tokenHash)]);
+
 // better-auth core tables (Google + Email code login via sendlib).
 // IDs are text to match better-auth expectations.
 const user = pgTable('user', {
@@ -88,4 +122,4 @@ const verification = pgTable('verification', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
 
-module.exports = { projects, apiKeys, otps, auditLogs, user, session, account, verification };
+module.exports = { projects, apiKeys, otps, auditLogs, projectShares, shareOtps, shareSessions, user, session, account, verification };

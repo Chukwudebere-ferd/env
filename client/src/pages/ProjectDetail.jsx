@@ -5,6 +5,8 @@ import KeyRow from '../components/KeyRow.jsx';
 import KeyAddForm from '../components/KeyAddForm.jsx';
 import OtpModal from '../components/OtpModal.jsx';
 import ConfirmDialog from '../components/ConfirmDialog.jsx';
+import ShareDialog from '../components/ShareDialog.jsx';
+import SharesList from '../components/SharesList.jsx';
 import ConsoleSidebar from '../components/ConsoleSidebar.jsx';
 import './ProjectDetail.css';
 
@@ -46,6 +48,8 @@ export default function ProjectDetail({ email, onSignOut }) {
   const [confirmVault, setConfirmVault] = useState(false);
   const [pendingKey, setPendingKey] = useState(null);
   const [deletingKeyId, setDeletingKeyId] = useState(null);
+  const [shares, setShares] = useState([]);
+  const [revokingId, setRevokingId] = useState(null);
 
   const load = useCallback(async () => {
     setState({ loading: true, error: '' });
@@ -101,6 +105,28 @@ export default function ProjectDetail({ email, onSignOut }) {
     } finally {
       if (keyId) setRevealingKeyId(null);
       else setRevealingAll(false);
+    }
+  }
+
+  const loadShares = useCallback(async () => {
+    try {
+      setShares(await api.listShares(email, projectId));
+    } catch {
+      // shares panel stays empty; keys flow is unaffected
+    }
+  }, [email, projectId]);
+
+  useEffect(() => { loadShares(); }, [loadShares]);
+
+  async function revokeShare(id) {
+    setRevokingId(id);
+    try {
+      await api.revokeShare(email, id);
+      await loadShares();
+    } catch (err) {
+      setState((s) => ({ ...s, error: err.message }));
+    } finally {
+      setRevokingId(null);
     }
   }
 
@@ -206,6 +232,7 @@ export default function ProjectDetail({ email, onSignOut }) {
           <div className="tabs seg detail-tabs" role="tablist" aria-label="Vault sections">
             <button type="button" role="tab" aria-selected={tab === 'keys'} onClick={() => setTab('keys')}>Keys</button>
             <button type="button" role="tab" aria-selected={tab === 'add'} onClick={() => setTab('add')}>Add and import</button>
+            <button type="button" role="tab" aria-selected={tab === 'share'} onClick={() => setTab('share')}>Share</button>
           </div>
 
           {tab === 'add' && (
@@ -221,6 +248,18 @@ export default function ProjectDetail({ email, onSignOut }) {
                 await load();
               }}
             />
+          )}
+
+          {tab === 'share' && (
+            <div className="grid">
+              <ShareDialog email={email} projectId={projectId} onCreated={loadShares} />
+              <div className="card ledger">
+                <div className="panel-head">
+                  <h2>Active invites</h2>
+                </div>
+                <SharesList shares={shares} revokingId={revokingId} onRevoke={revokeShare} />
+              </div>
+            </div>
           )}
 
           {tab === 'keys' && (

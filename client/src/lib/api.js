@@ -39,6 +39,40 @@ export const api = {
     fetch(`${BASE}/api/otp/verify`, opts('POST', email, { projectId, code })).then(handle),
   revealKeys: (email, projectId, keyId) =>
     fetch(`${BASE}/api/keys/reveal`, opts('POST', email, { projectId, keyId })).then(handle),
+  createShare: (email, payload) =>
+    fetch(`${BASE}/api/shares`, opts('POST', email, payload)).then(handle),
+  listShares: (email, projectId) =>
+    fetch(`${BASE}/api/shares?projectId=${encodeURIComponent(projectId)}`, { headers: headers(email), credentials: 'include' }).then(handle),
+  revokeShare: (email, id) =>
+    fetch(`${BASE}/api/shares/${encodeURIComponent(id)}/revoke`, opts('POST', email, {})).then(handle),
+  shareRequestOtp: (token, shareEmail) =>
+    fetch(`${BASE}/api/share/request-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, email: shareEmail }),
+    }).then(handle),
+  shareVerifyOtp: (token, shareEmail, code) =>
+    fetch(`${BASE}/api/share/verify-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, email: shareEmail, code }),
+    }).then(handle),
+  shareListKeys: (shareToken, sessionToken) =>
+    fetch(`${BASE}/api/share/keys?shareToken=${encodeURIComponent(shareToken)}&sessionToken=${encodeURIComponent(sessionToken)}`).then(handle),
+  shareReveal: (shareToken, sessionToken, keyId) =>
+    fetch(`${BASE}/api/share/reveal`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ shareToken, sessionToken, keyId }),
+    }).then(handle),
+  shareAdd: (payload) =>
+    fetch(`${BASE}/api/share/add`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }).then(handle),
+  shareStatus: (token) =>
+    fetch(`${BASE}/api/share/status?token=${encodeURIComponent(token)}`).then(handle),
   deleteProject: (email, projectId) =>
     fetch(`${BASE}/api/projects/${encodeURIComponent(projectId)}`, { ...opts('DELETE', email) }).then(handle),
   deleteKey: (email, keyId) =>

@@ -8,6 +8,8 @@ const cors = require('cors');
 const projectsRouter = require('./routes/projects');
 const keysRouter = require('./routes/keys');
 const otpRouter = require('./routes/otp');
+const sharesRouter = require('./routes/shares');
+const shareAccessRouter = require('./routes/shareAccess');
 const { auth } = require('./auth');
 const { toNodeHandler } = require('better-auth/node');
 
@@ -25,6 +27,8 @@ app.get('/health', (_req, res) => res.json({ ok: true }));
 app.use('/api/projects', projectsRouter);
 app.use('/api/keys', keysRouter);
 app.use('/api/otp', otpRouter);
+app.use('/api/shares', sharesRouter);
+app.use('/api/share', shareAccessRouter);
 
 // eslint-disable-next-line no-unused-vars
 app.use((err, _req, res, _next) => {

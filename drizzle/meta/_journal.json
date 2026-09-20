@@ -15,6 +15,13 @@
       "when": 1789882844966,
       "tag": "0001_fresh_dracula",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789891921556,
+      "tag": "0002_bizarre_living_lightning",
+      "breakpoints": true
     }
   ]
 }
