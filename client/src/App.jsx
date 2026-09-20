@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import Login from './pages/Login.jsx';
 import ShareAccess from './pages/ShareAccess.jsx';
@@ -12,6 +13,14 @@ import './App.css';
 export default function App() {
   const { data: session, isPending } = useSession();
   const email = session?.user?.email || '';
+  // Ready-gate: show the loading screen only for the initial session
+  // resolution. better-auth refetches on every window focus and flips
+  // isPending while logged out, which unmounted all routes (wiping the
+  // share OTP form each time a collaborator returned from their email app).
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    if (!isPending) setReady(true);
+  }, [isPending]);
   const location = useLocation();
   const isConsole = location.pathname.startsWith('/dashboard');
 
@@ -23,7 +32,7 @@ export default function App() {
     }
   };
 
-  if (isPending) {
+  if (!ready) {
     return (
       <main className="page" id="main">
         <p className="muted" role="status" style={{ padding: 32 }}>Loading session…</p>
