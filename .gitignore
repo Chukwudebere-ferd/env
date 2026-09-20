@@ -1,5 +1,7 @@
 .env
 .env.production
+.env.production.example
 .package-lock.json
 sql
 node_modules
+brag-output

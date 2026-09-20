@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 function VaultIcon() {
@@ -27,6 +28,16 @@ function CodeIcon() {
 }
 
 export default function ConsoleSidebar({ active, email, onSignOut, id = 'console-nav', onNavigate }) {
+  const [signingOut, setSigningOut] = useState(false);
+  async function handleSignOut() {
+    if (signingOut) return;
+    setSigningOut(true);
+    try {
+      await onSignOut?.();
+    } finally {
+      setSigningOut(false);
+    }
+  }
   return (
     <aside className="rail" id={id} aria-label="Console navigation">
       <Link to="/dashboard" className="rail-brand" aria-label="env console">
@@ -50,8 +61,8 @@ export default function ConsoleSidebar({ active, email, onSignOut, id = 'console
       <div className="rail-foot">
         <p className="rail-email">{email}</p>
         {onSignOut && (
-          <button type="button" className="btn btn-secondary rail-btn" onClick={onSignOut}>
-            Sign out
+          <button type="button" className="btn btn-secondary rail-btn" onClick={handleSignOut} disabled={signingOut} aria-busy={signingOut}>
+            {signingOut ? 'Signing out…' : 'Sign out'}
           </button>
         )}
         <p className="muted rail-hint">

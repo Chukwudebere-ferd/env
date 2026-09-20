@@ -1,6 +1,17 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 export default function SiteHeader({ email, onSignOut }) {
+  const [signingOut, setSigningOut] = useState(false);
+  async function handleSignOut() {
+    if (signingOut) return;
+    setSigningOut(true);
+    try {
+      await onSignOut?.();
+    } finally {
+      setSigningOut(false);
+    }
+  }
   return (
     <div className="shell-header">
       <div className="pill-bar">
@@ -20,8 +31,8 @@ export default function SiteHeader({ email, onSignOut }) {
             )}
           </nav>
           {email ? (
-            <button type="button" className="btn btn-secondary header-btn" onClick={onSignOut}>
-              Sign out
+            <button type="button" className="btn btn-secondary header-btn" onClick={handleSignOut} disabled={signingOut} aria-busy={signingOut}>
+              {signingOut ? 'Signing out…' : 'Sign out'}
             </button>
           ) : (
             <Link to="/login" className="btn header-btn">Get started</Link>
