@@ -14,7 +14,7 @@ const { toNodeHandler } = require('better-auth/node');
 const app = express();
 app.use(helmet());
 app.use(cors({
-  origin: (process.env.CLIENT_URL || 'http://localhost:5173').split(','),
+  origin: (process.env.CLIENT_URL || 'http://localhost:5173,http://localhost:5174').split(','),
   credentials: true,
 }));
 app.all('/api/auth/*splat', toNodeHandler(auth));

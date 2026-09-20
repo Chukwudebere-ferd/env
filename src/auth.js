@@ -20,7 +20,7 @@ const auth = betterAuth({
   }),
   secret: process.env.BETTER_AUTH_SECRET,
   baseURL: process.env.BETTER_AUTH_URL,
-  trustedOrigins: (process.env.CLIENT_URL || 'http://localhost:5173').split(','),
+  trustedOrigins: (process.env.CLIENT_URL || 'http://localhost:5173,http://localhost:5174').split(','),
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID || '',
