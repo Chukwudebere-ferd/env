@@ -4,6 +4,9 @@ import { api } from '../lib/api.js';
 import KeyAddForm from '../components/KeyAddForm.jsx';
 import CopyButton from '../components/CopyButton.jsx';
 import ShareDead from '../components/ShareDead.jsx';
+import Logo from '../components/Logo.jsx';
+import OtpBoxes from '../components/OtpBoxes.jsx';
+import '../components/Gate.css';
 
 const DEAD_RE = /expired|revoked|no views|out of views|share not found/i;
 
@@ -223,7 +226,8 @@ export default function ShareAccess() {
   if (checking) {
     return (
       <main className="page" id="main">
-        <div className="login-wrap">
+        <div className="gate gate-status">
+          <div className="gate-brand"><Logo /></div>
           <p className="muted" role="status">Checking invite…</p>
         </div>
       </main>
@@ -236,63 +240,81 @@ export default function ShareAccess() {
 
   return (
     <main className="page" id="main">
-      <div className="login-wrap">
-        <p className="mono muted login-eyebrow">SHARED VAULT · OTP PROTECTED</p>
-        <h1 className="login-title">{session?.projectName || 'Shared vault'}</h1>
-        {!session ? (
-          <p className="muted login-sub">The owner invited you. Verify the emailed code. No account needed.</p>
-        ) : (
-          <p className="muted login-sub">
-            {openMs > 0 ? `Open for about ${openMins} more min.` : 'Session expired. Verify again.'}
-            {meta && ` ${meta.remainingUses} view${meta.remainingUses === 1 ? '' : 's'} left.`}
-          </p>
+      <div className={session ? 'gate-wide' : 'gate'}>
+        {!session && (
+          <>
+            <div className="gate-brand"><Logo /></div>
+            <ol className="gate-steps" aria-label="Progress">
+              <li className={step === 'code' ? 'gate-step done' : 'gate-step'} aria-current={step === 'email' ? 'step' : undefined}>
+                <span className="gate-step-num" aria-hidden="true">1</span> Email
+              </li>
+              <span className="gate-rule" aria-hidden="true" />
+              <li className="gate-step" aria-current={step === 'code' ? 'step' : undefined}>
+                <span className="gate-step-num" aria-hidden="true">2</span> Code
+              </li>
+            </ol>
+          </>
+        )}
+        {session && (
+          <>
+            <h1 className="gate-title">{session.projectName}</h1>
+            <p className="gate-sub">
+              {openMs > 0 ? `Open for about ${openMins} more min.` : 'Session expired. Verify again.'}
+              {meta && ` ${meta.remainingUses} view${meta.remainingUses === 1 ? '' : 's'} left.`}
+            </p>
+          </>
         )}
 
         {!session && step === 'email' && (
-          <form className="card login-card" onSubmit={sendCode} noValidate>
-            <label className="muted login-label" htmlFor="share-email">Invited email</label>
-            <input
-              id="share-email"
-              className="input login-input"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="friend@company.com"
-            />
-            {error && <p className="error login-error" role="alert">{error}</p>}
-            {info && <p className="muted login-error" role="status">{info}</p>}
-            <button type="submit" className="btn btn-accent login-block" disabled={busy} aria-busy={busy}>
-              {busy ? 'Sending…' : 'Send code'}
-            </button>
-          </form>
+          <>
+            <h1 className="gate-title">Open the shared vault</h1>
+            <p className="gate-sub">Enter the email the owner invited. We send a 6-digit code, good for 10 minutes.</p>
+            <form className="card gate-card" onSubmit={sendCode} noValidate>
+              <label className="gate-label" htmlFor="share-email">Invited email</label>
+              <input
+                id="share-email"
+                className="input gate-input"
+                type="email"
+                required
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="friend@company.com"
+              />
+              {error && <p className="error gate-msg" role="alert">{error}</p>}
+              {info && <p className="muted gate-msg" role="status">{info}</p>}
+              <button type="submit" className="btn btn-accent gate-block" disabled={busy} aria-busy={busy}>
+                {busy ? 'Sending…' : 'Send code'}
+              </button>
+            </form>
+          </>
         )}
 
         {!session && step === 'code' && (
-          <form className="card login-card" onSubmit={verify} noValidate>
-            <label className="muted login-label" htmlFor="share-otp">6 digit code sent to {email.trim()}</label>
-            <input
-              id="share-otp"
-              className="input mono login-input"
-              value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              placeholder="••••••"
-              required
-            />
-            {error && <p className="error login-error" role="alert">{error}</p>}
-            {info && <p className="muted login-error" role="status">{info}</p>}
-            <button type="submit" className="btn btn-accent login-block" disabled={busy || code.trim().length < 6} aria-busy={busy}>
-              {busy ? 'Verifying…' : 'Verify and view'}
-            </button>
-            <button type="button" className="btn btn-secondary login-block" onClick={() => switchEmail()} disabled={busy} style={{ marginTop: 8 }}>
-              Use a different email
-            </button>
-            <button type="button" className="btn btn-secondary login-block" onClick={sendCode} disabled={busy} style={{ marginTop: 8 }}>
-              {busy ? 'Sending…' : 'Resend code'}
-            </button>
-          </form>
+          <>
+            <h1 className="gate-title">Enter your code</h1>
+            <p className="gate-sub">Sent to <strong>{email.trim()}</strong>. It expires in 10 minutes.</p>
+            <form className="card gate-card" onSubmit={verify} noValidate>
+              <OtpBoxes
+                value={code}
+                onChange={(v) => { setCode(v); if (error) setError(''); }}
+                busy={busy}
+              />
+              {error && <p className="error gate-msg" role="alert">{error}</p>}
+              {info && <p className="muted gate-msg" role="status">{info}</p>}
+              <button type="submit" className="btn btn-accent gate-block" disabled={busy || code.trim().length < 6} aria-busy={busy}>
+                {busy ? 'Verifying…' : 'Verify and view'}
+              </button>
+              <div className="gate-row">
+                <button type="button" className="btn btn-secondary" onClick={() => switchEmail()} disabled={busy}>
+                  Use a different email
+                </button>
+                <button type="button" className="btn btn-secondary" onClick={sendCode} disabled={busy} aria-busy={busy}>
+                  {busy ? 'Sending…' : 'Resend code'}
+                </button>
+              </div>
+            </form>
+          </>
         )}
 
         {session && (

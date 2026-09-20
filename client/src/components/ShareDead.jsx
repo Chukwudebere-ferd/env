@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom';
+import Logo from './Logo.jsx';
+import './Gate.css';
 
 const COPY = {
   revoked: {
@@ -23,20 +25,20 @@ export default function ShareDead({ status, expiresAt }) {
   const copy = COPY[status] || COPY.not_found;
   return (
     <main className="page" id="main">
-      <div className="login-wrap">
-        <p className="mono muted login-eyebrow">SHARED VAULT · CLOSED</p>
-        <h1 className="login-title">{copy.title}</h1>
-        <p className="muted login-sub">{copy.body}</p>
-        <div className="card login-card">
+      <div className="gate">
+        <div className="gate-brand"><Logo /></div>
+        <h1 className="gate-title">{copy.title}</h1>
+        <p className="gate-sub">{copy.body}</p>
+        <div className="card gate-card">
           {expiresAt && status !== 'not_found' && (
-            <p className="muted mono login-error" role="status">
-              EXPIRED {new Date(expiresAt).toLocaleString().toUpperCase()}
+            <p className="muted mono gate-msg" role="status">
+              Expired {new Date(expiresAt).toLocaleString()}
             </p>
           )}
-          <p className="muted login-error" role="status">
+          <p className="muted gate-msg" role="status">
             Nothing is shown here. No account action is needed.
           </p>
-          <Link to="/" className="btn btn-secondary login-block">
+          <Link to="/" className="btn btn-secondary gate-block">
             What is env?
           </Link>
         </div>

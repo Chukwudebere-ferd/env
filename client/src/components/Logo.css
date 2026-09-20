@@ -1,0 +1,54 @@
+/* CSS-only env mark: accent tile, near-black mono glyph. Sizes via modifier. */
+
+.logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo-mark {
+    display: grid;
+    place-items: center;
+    background: var(--color-accent);
+    color: var(--color-accent-fg);
+    font-family:
+        "IBM Plex Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-weight: 700;
+    user-select: none;
+}
+
+.logo-name {
+    font-weight: 650;
+    letter-spacing: -0.02em;
+    color: var(--color-fg);
+}
+
+.logo-sm .logo-mark {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+    border-radius: 8px;
+}
+.logo-sm .logo-name {
+    font-size: 16px;
+}
+
+.logo-md .logo-mark {
+    width: 36px;
+    height: 36px;
+    font-size: 17px;
+    border-radius: 10px;
+}
+.logo-md .logo-name {
+    font-size: 19px;
+}
+
+.logo-lg .logo-mark {
+    width: 48px;
+    height: 48px;
+    font-size: 22px;
+    border-radius: 12px;
+}
+.logo-lg .logo-name {
+    font-size: 24px;
+}

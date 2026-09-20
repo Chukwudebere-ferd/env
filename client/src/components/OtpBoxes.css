@@ -1,0 +1,59 @@
+/* Segmented OTP boxes. Tokens from index.css. */
+
+.otp-fieldset {
+    border: 0;
+    margin: 0 0 12px;
+    padding: 0;
+    min-width: 0;
+}
+
+.otp-legend {
+    font-size: 13px;
+    color: var(--color-mute);
+    padding: 0;
+    margin-bottom: 8px;
+}
+
+.otp-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.otp-box {
+    width: 100%;
+    height: 56px;
+    border: 1px solid #27282d;
+    border-radius: 10px;
+    background: #111214;
+    color: var(--color-fg);
+    font-family:
+        "IBM Plex Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 22px;
+    text-align: center;
+    padding: 0;
+}
+
+.otp-box:focus {
+    outline: none;
+    border-color: rgba(159, 232, 113, 0.5);
+    box-shadow: 0 0 0 2px rgba(159, 232, 113, 0.2);
+}
+
+.otp-box.filled {
+    border-color: #3f434a;
+}
+
+.otp-box:disabled {
+    opacity: 0.6;
+}
+
+@media (max-width: 420px) {
+    .otp-grid {
+        gap: 6px;
+    }
+    .otp-box {
+        height: 48px;
+        font-size: 19px;
+    }
+}
