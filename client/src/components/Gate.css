@@ -122,6 +122,51 @@
     padding: var(--space-5) 0;
 }
 
+/* Share bulk export: revealed keys as NAME=value text. Quiet panel,
+   tokens only, readable on small screens. */
+.share-env {
+    border-top: 1px solid var(--color-line);
+    padding: var(--space-3) var(--space-3) var(--space-3);
+}
+.share-env-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-2);
+}
+.share-env-head h3 {
+    font-size: 14px;
+    font-weight: 600;
+}
+.share-env-count {
+    font-size: 12px;
+}
+.share-env-body {
+    margin: 0;
+    padding: var(--space-3);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-sm);
+    background: var(--color-panel-2);
+    color: var(--color-fg);
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 280px;
+    overflow: auto;
+}
+.share-env-foot {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: var(--space-2);
+}
+.share-env-hint {
+    padding: 0 var(--space-3) var(--space-3);
+    font-size: 13px;
+}
+
 @media (max-width: 560px) {
     .gate {
         margin: var(--space-5) auto;

@@ -223,6 +223,11 @@ export default function ShareAccess() {
   const openMs = session ? new Date(session.expiresAt).getTime() - now : 0;
   const openMins = Math.max(1, Math.ceil(openMs / 60000));
 
+  // Bulk export in the same NAME=value format the owner pastes.
+  // Only revealed values are included; masked rows never leak into the text.
+  const revealedEntries = keys.filter((k) => revealed[k.id] != null);
+  const envText = revealedEntries.map((k) => `${k.config_name}=${revealed[k.id]}`).join('\n');
+
   if (checking) {
     return (
       <main className="page" id="main">
@@ -323,15 +328,20 @@ export default function ShareAccess() {
             <div className="card ledger">
               <div className="panel-head">
                 <h2>Keys</h2>
-                <button
-                  type="button"
-                  className="btn btn-accent btn-md"
-                  onClick={() => reveal(null)}
-                  disabled={revealing === 'all' || (meta && meta.remainingUses <= 0)}
-                  aria-busy={revealing === 'all'}
-                >
-                  {revealing === 'all' ? 'Revealing…' : 'Reveal all (1 view)'}
-                </button>
+                <div className="row">
+                  {envText && (
+                    <CopyButton text={envText} label={`Copy all (${revealedEntries.length})`} />
+                  )}
+                  <button
+                    type="button"
+                    className="btn btn-accent btn-md"
+                    onClick={() => reveal(null)}
+                    disabled={revealing === 'all' || (meta && meta.remainingUses <= 0)}
+                    aria-busy={revealing === 'all'}
+                  >
+                    {revealing === 'all' ? 'Revealing…' : 'Reveal all (1 view)'}
+                  </button>
+                </div>
               </div>
               <table className="table">
                 <thead>
@@ -365,6 +375,25 @@ export default function ShareAccess() {
                   ))}
                 </tbody>
               </table>
+              {envText ? (
+                <div className="share-env">
+                  <div className="share-env-head">
+                    <h3>Copy all as .env</h3>
+                    <span className="muted share-env-count">
+                      {revealedEntries.length} of {keys.length} revealed
+                      {revealedEntries.length < keys.length ? ' — reveal all to copy everything' : ''}
+                    </span>
+                  </div>
+                  <pre className="mono share-env-body" tabIndex="0" aria-label="Revealed keys in NAME equals value format">{envText}</pre>
+                  <div className="share-env-foot">
+                    <CopyButton text={envText} label={`Copy all (${revealedEntries.length})`} />
+                  </div>
+                </div>
+              ) : (
+                keys.length > 0 && (
+                  <p className="muted share-env-hint">Reveal one key or reveal all, then copy everything at once as NAME=value lines.</p>
+                )
+              )}
               {keys.length === 0 && (
                 <div className="empty">
                   <h2>No keys yet</h2>
