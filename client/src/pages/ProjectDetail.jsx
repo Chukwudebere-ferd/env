@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../lib/api.js';
+import { copyText } from '../lib/copy.js';
 import KeyRow from '../components/KeyRow.jsx';
 import KeyAddForm from '../components/KeyAddForm.jsx';
 import OtpModal from '../components/OtpModal.jsx';
@@ -50,6 +51,19 @@ export default function ProjectDetail({ email, onSignOut }) {
   const [deletingKeyId, setDeletingKeyId] = useState(null);
   const [shares, setShares] = useState([]);
   const [revokingId, setRevokingId] = useState(null);
+
+  async function copyAll() {
+    if (!otpOpen) {
+      setShowOtp(true);
+      return;
+    }
+    const lines = keys.map((k) => {
+      const name = k.config_name || k.configName;
+      const value = revealed[k.id];
+      return value ? `${name}=${value}` : null;
+    }).filter(Boolean);
+    await copyText(lines.join('\n'));
+  }
 
   const load = useCallback(async () => {
     setState({ loading: true, error: '' });
@@ -207,6 +221,9 @@ export default function ProjectDetail({ email, onSignOut }) {
               </button>
               <button type="button" className="btn btn-accent detail-topbar-btn" onClick={() => reveal(null)} disabled={revealingAll || state.loading} aria-busy={revealingAll}>
                 {revealingAll ? 'Revealing…' : 'Reveal all'}
+              </button>
+              <button type="button" className="btn btn-secondary detail-topbar-btn" onClick={copyAll} disabled={!otpOpen || revealedCount === 0 || state.loading}>
+                Copy all
               </button>
               <button type="button" className="btn btn-secondary detail-topbar-btn" onClick={() => setConfirmVault(true)} disabled={busyDelete}>
                 {busyDelete ? 'Deleting…' : 'Delete vault'}
